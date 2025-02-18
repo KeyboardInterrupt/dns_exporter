@@ -3,9 +3,9 @@ version: "3.8"
 services:
   dns-exporter:
     environment:
-      DNS_SERVERS: 62.138.222.111,62.138.222.222
-      TEST_DOMAINS: debian.org,debian.com,s3.de-west-1.psmanaged.com,asfzgasfuzgasf.frfef
-      SLEEP_INTERVAL: 0.5
+      DNS_SERVERS: 8.8.8.8,1.1.1.1,9.9.9.9
+      TEST_DOMAINS: example.com,google.com
+      SLEEP_INTERVAL: 1
     build: .
     container_name: dns_exporter
     ports:
