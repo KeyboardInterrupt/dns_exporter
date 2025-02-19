@@ -1,4 +1,4 @@
-name: Build and publish Docker image
+name: Docker Build and Push
 
 on:
   push:
@@ -6,13 +6,27 @@ on:
       - main
 
 jobs:
-  build-and-publish-head:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.5.0
-    - name: Build and publish "head" Docker image
-      uses: VaultVulp/gp-docker-action@1.6.0
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        image-name: veiled-haven-landingpage
-        image-tag: head
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Log in to GitHub Container Registry
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 4: Build and push Docker image
+      - name: Build and push Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/dns-exporter:latest .
+          docker push ghcr.io/${{ github.repository }}/dns-exporter:latest
