@@ -22,12 +22,12 @@ logger = logging.getLogger()
 dns_response_avg = Gauge(f"dns_response_avg_seconds_{WINDOW_SIZE}s", f"Average DNS response time over {WINDOW_SIZE}s", ["server", "domain"])
 dns_response_min = Gauge(f"dns_response_min_seconds_{WINDOW_SIZE}s", f"Minimum DNS response time over {WINDOW_SIZE}s", ["server", "domain"])
 dns_response_max = Gauge(f"dns_response_max_seconds_{WINDOW_SIZE}s", f"Maximum DNS response time over {WINDOW_SIZE}s", ["server", "domain"])
-dns_timeouts = Gauge(f"dns_timeouts_total_{WINDOW_SIZE}s", f"Number of DNS timeouts over {WINDOW_SIZE}s", ["server", "domain"])
-dns_no_answer = Gauge(f"dns_no_answer_total_{WINDOW_SIZE}s", f"Number of DNS responses with no answer over {WINDOW_SIZE}s", ["server", "domain"])
-dns_lifetime_timeout = Gauge(f"dns_lifetime_timeout_total_{WINDOW_SIZE}s", f"Number of DNS queries that timed out over {WINDOW_SIZE}s", ["server", "domain"])
-dns_server_failures = Gauge(f"dns_server_failures_total_{WINDOW_SIZE}s", f"Number of DNS server failures over {WINDOW_SIZE}s", ["server", "domain"])
-dns_other_failures = Gauge(f"dns_other_failures_total_{WINDOW_SIZE}s", f"Number of other DNS failures over {WINDOW_SIZE}s", ["server", "domain"])
-dns_high_latency = Gauge(f"dns_high_latency_total_{WINDOW_SIZE}s", f"Number of DNS queries with high latency (>= 1s) over {WINDOW_SIZE}s", ["server", "domain"])
+dns_timeouts = Gauge(f"dns_timeouts_total", f"Total number of DNS timeouts", ["server", "domain"])
+dns_no_answer = Gauge(f"dns_no_answer_total", f"total number of DNS responses with no answer", ["server", "domain"])
+dns_lifetime_timeout = Gauge(f"dns_lifetime_timeout_total", f"Total number of DNS queries that timed out", ["server", "domain"])
+dns_server_failures = Gauge(f"dns_server_failures_total", f"Total number of DNS server failures", ["server", "domain"])
+dns_other_failures = Gauge(f"dns_other_failures_total", f"Total number of other DNS failures", ["server", "domain"])
+dns_high_latency = Gauge(f"dns_high_latency_total", f"Total number of DNS queries with high latency (>= 1s)", ["server", "domain"])
 dns_response_queue_length = Gauge(f"dns_response_queue_length_{WINDOW_SIZE}s", f"Queue length for DNS response times over {WINDOW_SIZE}s", ["server", "domain"])
 
 # Store response times with timestamps (a sliding window)
@@ -93,7 +93,13 @@ def update_metrics():
 if __name__ == "__main__":
     start_http_server(PORT)
     logger.info(f"DNS Exporter running on port {PORT}")
-
+    for server in DNS_SERVERS:
+        for domain in TEST_DOMAINS:
+            dns_high_latency.labels(server=server, domain=domain).set(0)
+            dns_no_answer.labels(server=server, domain=domain).set(0)
+            dns_lifetime_timeout.labels(server=server, domain=domain).set(0)
+            dns_other_failures.labels(server=server, domain=domain).set(0)
+            dns_server_failures.labels(server=server, domain=domain).set(0)
     while True:
         query_dns()
         update_metrics()
